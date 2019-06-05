@@ -16,14 +16,18 @@ const (
 
 func TransferAndDeleteLogFile(client *backend.RxGrpcClient) func(file log.LogFile) {
 	return func(log log.LogFile) {
-		doTransfer(client, log)
+		if log.Size() > 0 {
+			doTransfer(client, log)
+		}
 	}
 }
 
 func TransferAndDeleteLogFiles(client *backend.RxGrpcClient) func(logs []log.LogFile) {
 	return func(logs []log.LogFile) {
 		for _, f := range logs {
-			doTransfer(client, f)
+			if f.Size() > 0 {
+				doTransfer(client, f)
+			}
 		}
 	}
 }
