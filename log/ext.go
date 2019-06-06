@@ -19,8 +19,9 @@ const (
 
 type LogFile struct {
 	os.FileInfo
-	CreatedAt time.Time
-	FullPath  string
+	CreatedAt  time.Time
+	FullPath   string
+	Compressed bool
 }
 
 func CollectExistedLogs(loggerConfig Config) ([]LogFile, error) {
@@ -59,9 +60,10 @@ func MakeLogFile(c Config, filepath string) (*LogFile, error) {
 			return nil, err
 		} else {
 			return &LogFile{
-				FullPath:  filepath,
-				CreatedAt: t,
-				FileInfo:  info,
+				FullPath:   filepath,
+				CreatedAt:  t,
+				FileInfo:   info,
+				Compressed: c.IsCompress(),
 			}, nil
 		}
 	}

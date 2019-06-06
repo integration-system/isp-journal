@@ -19,27 +19,31 @@ const (
 	moduleNameField = "moduleName"
 	createdAtField  = "createdAt"
 	hostField       = "host"
+
+	gzipContent   = "application/gzip"
+	binaryContent = "application/binary"
 )
 
 type LogInfo struct {
 	ModuleName string
 	Host       string
+	Compressed bool
 	CreatedAt  time.Time
 }
 
-func TransferAndDeleteLogFile(client *backend.RxGrpcClient) func(file log.LogFile) {
+func TransferAndDeleteLogFile(client *backend.RxGrpcClient, moduleName, host string) func(file log.LogFile) {
 	return func(log log.LogFile) {
 		if log.Size() > 0 {
-			doTransfer(client, log)
+			doTransfer(client, log, moduleName, host)
 		}
 	}
 }
 
-func TransferAndDeleteLogFiles(client *backend.RxGrpcClient) func(logs []log.LogFile) {
+func TransferAndDeleteLogFiles(client *backend.RxGrpcClient, moduleName, host string) func(logs []log.LogFile) {
 	return func(logs []log.LogFile) {
 		for _, f := range logs {
 			if f.Size() > 0 {
-				doTransfer(client, f)
+				doTransfer(client, f, moduleName, host)
 			}
 		}
 	}
@@ -66,17 +70,23 @@ func GetLogInfo(bf streaming.BeginFile) (*LogInfo, error) {
 		return nil, fmt.Errorf("invalid '%s' time format: %v", createdAtField, err)
 	}
 
+	compressed := false
+	if bf.ContentType == gzipContent {
+		compressed = true
+	}
+
 	return &LogInfo{
 		ModuleName: moduleName,
 		Host:       host,
+		Compressed: compressed,
 		CreatedAt:  createdAtTime,
 	}, nil
 }
 
-func doTransfer(client *backend.RxGrpcClient, f log.LogFile) {
+func doTransfer(client *backend.RxGrpcClient, f log.LogFile, moduleName, host string) {
 	err := client.Visit(func(c *backend.InternalGrpcClient) error {
 		return c.InvokeStream(transferMethod, -1, func(stream streaming.DuplexMessageStream, md metadata.MD) error {
-			return streaming.WriteFile(stream, f.FullPath, statToFileHeader(f))
+			return streaming.WriteFile(stream, f.FullPath, statToFileHeader(f, moduleName, host))
 		})
 	})
 
@@ -95,10 +105,14 @@ func statToFileHeader(f log.LogFile, moduleName, host string) streaming.BeginFil
 		hostField:       host,
 		createdAtField:  entry.FormatTime(f.CreatedAt),
 	}
+	ct := binaryContent
+	if f.Compressed {
+		ct = gzipContent
+	}
 	return streaming.BeginFile{
 		FileName:      f.Name(),
 		FormDataName:  f.Name(),
-		ContentType:   "application/binary",
+		ContentType:   ct,
 		ContentLength: f.Size(),
 		FormData:      formData,
 	}
