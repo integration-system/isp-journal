@@ -68,10 +68,10 @@ func (j *fileJournal) Close() error {
 	return j.log.Close()
 }
 
-func NewFileJournal(loggerConfig log.Config, host, moduleName string, opts ...Option) Journal {
+func NewFileJournal(loggerConfig log.Config, moduleName, host string, opts ...Option) Journal {
 	j := &fileJournal{
-		host:       host,
 		moduleName: moduleName,
+		host:       host,
 	}
 
 	for _, opt := range opts {
