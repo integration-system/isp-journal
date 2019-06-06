@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	io2 "github.com/integration-system/isp-io"
 	"io"
 	"os"
 	"sync"
@@ -13,34 +14,13 @@ type Logger interface {
 	Rotate() error
 }
 
-type pipe []io.Writer
-
-func (p pipe) Close() error {
-	for _, w := range p {
-		if f, ok := w.(interface{ Flush() error }); ok {
-			f.Flush() //TODO handle error
-		}
-		if c, ok := w.(io.Closer); ok {
-			c.Close() //TODO handle error
-		}
-	}
-	return nil
-}
-
-func (p pipe) Write(bytes []byte) (int, error) {
-	if len(p) == 0 {
-		return 0, nil
-	}
-	return p[0].Write(bytes)
-}
-
 type defaultLogger struct {
 	c Config
 
 	afterRotation func(prevFile LogFile)
 	curSize       int64
 	wrLock        sync.Mutex
-	curWr         pipe
+	curWr         io2.Pipe
 	rotateChan    chan struct{}
 	rotateErrChan chan error
 	closeChan     chan struct{}

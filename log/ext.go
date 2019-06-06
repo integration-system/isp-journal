@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
+	io2 "github.com/integration-system/isp-io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -82,7 +83,7 @@ func parseTimeFormFilename(filename, prefix, ext string) (time.Time, error) {
 
 // openNewAndRenameExisted opens a new log file for writing, moving any old log file out of the
 // way.  This methods assumes the file has already been closed.
-func openNewAndRenameExisted(c Config) (pipe, string, error) {
+func openNewAndRenameExisted(c Config) (io2.Pipe, string, error) {
 	err := os.MkdirAll(c.GetDirectory(), 0755)
 	if err != nil {
 		return nil, "", fmt.Errorf("can't make directories for new logfile: %s", err)
@@ -115,21 +116,22 @@ func openNewAndRenameExisted(c Config) (pipe, string, error) {
 	return pipe, newname, nil
 }
 
-func makePipe(c Config, srcFile string, flag int, mode os.FileMode) (pipe, error) {
+func makePipe(c Config, srcFile string, flag int, mode os.FileMode) (io2.Pipe, error) {
 	f, err := os.OpenFile(srcFile, flag, mode)
 	if err != nil {
 		return nil, err
 	}
-	p := pipe{f}
+	p := io2.NewPipe()
+	p.Unshift(f)
 
 	if c.IsBuffered() {
-		bufWr := bufio.NewWriterSize(p[len(p)-1], c.GetBufferSize())
-		p = append(pipe{bufWr}, p...)
+		bufWr := bufio.NewWriterSize(p.Last(), c.GetBufferSize())
+		p.Unshift(bufWr)
 	}
 
 	if c.IsCompress() {
-		gzipWr := gzip.NewWriter(p[len(p)-1])
-		p = append(pipe{gzipWr}, p...)
+		gzipWr := gzip.NewWriter(p.Last())
+		p.Unshift(gzipWr)
 	}
 
 	return p, nil
