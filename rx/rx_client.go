@@ -32,8 +32,10 @@ func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName, host s
 		"config":     loggerConfig,
 	}
 	if !cmp.Equal(j.lastConfig, newConfig) {
-		_ = j.journal.Close()
-		j.journal = nil
+		if j.journal != nil {
+			_ = j.journal.Close()
+			j.journal = nil
+		}
 		j.lastConfig = newConfig
 
 		if loggerConfig.Enable {
@@ -50,7 +52,7 @@ func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName, host s
 
 func (j *RxJournal) Log(level entry.Level, event string, req []byte, res []byte, err error) error {
 	if j.journal == nil {
-		return ErrNotInitialize
+		return nil
 	}
 	return j.journal.Log(level, event, req, res, err)
 }
