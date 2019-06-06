@@ -74,6 +74,13 @@ func (j *RxJournal) Close() error {
 	return j.journal.Close()
 }
 
+func NewDefaultRxJournal(journalServiceClient *backend.RxGrpcClient) *RxJournal {
+	return &RxJournal{
+		serviceClient: journalServiceClient,
+		lastConfig:    make(map[string]interface{}),
+	}
+}
+
 func getHost() string {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
@@ -82,11 +89,4 @@ func getHost() string {
 	defer conn.Close()
 
 	return conn.LocalAddr().(*net.UDPAddr).IP.To4().String()
-}
-
-func NewDefaultRxJournal(journalServiceClient *backend.RxGrpcClient) *RxJournal {
-	return &RxJournal{
-		serviceClient: journalServiceClient,
-		lastConfig:    make(map[string]interface{}),
-	}
 }
