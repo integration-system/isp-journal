@@ -14,13 +14,18 @@ var (
 	ErrNotInitialize = errors.New("not initialized, call `ReceiveConfiguration` first")
 )
 
+type Config struct {
+	log.Config
+	Enable bool
+}
+
 type RxJournal struct {
 	journal       journal.Journal
 	serviceClient *backend.RxGrpcClient
 	lastConfig    map[string]interface{}
 }
 
-func (j *RxJournal) ReceiveConfiguration(loggerConfig log.Config, moduleName, host string) {
+func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName, host string) {
 	newConfig := map[string]interface{}{
 		"moduleName": moduleName,
 		"host":       host,
@@ -28,14 +33,18 @@ func (j *RxJournal) ReceiveConfiguration(loggerConfig log.Config, moduleName, ho
 	}
 	if !cmp.Equal(j.lastConfig, newConfig) {
 		_ = j.journal.Close()
-		j.journal = journal.NewFileJournal(
-			loggerConfig,
-			moduleName,
-			host,
-			journal.WithAfterRotation(transfer.TransferAndDeleteLogFile(j.serviceClient, moduleName, host)),
-			journal.WithCollectingExistedLogs(transfer.TransferAndDeleteLogFiles(j.serviceClient, moduleName, host)),
-		)
+		j.journal = nil
 		j.lastConfig = newConfig
+
+		if loggerConfig.Enable {
+			j.journal = journal.NewFileJournal(
+				loggerConfig.Config,
+				moduleName,
+				host,
+				journal.WithAfterRotation(transfer.TransferAndDeleteLogFile(j.serviceClient, moduleName, host)),
+				journal.WithCollectingExistedLogs(transfer.TransferAndDeleteLogFiles(j.serviceClient, moduleName, host)),
+			)
+		}
 	}
 }
 
