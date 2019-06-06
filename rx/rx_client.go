@@ -8,6 +8,7 @@ import (
 	"github.com/integration-system/isp-journal/log"
 	"github.com/integration-system/isp-journal/transfer"
 	"github.com/integration-system/isp-lib/backend"
+	"net"
 )
 
 var (
@@ -25,10 +26,9 @@ type RxJournal struct {
 	lastConfig    map[string]interface{}
 }
 
-func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName, host string) {
+func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName string) {
 	newConfig := map[string]interface{}{
 		"moduleName": moduleName,
-		"host":       host,
 		"config":     loggerConfig,
 	}
 	if !cmp.Equal(j.lastConfig, newConfig) {
@@ -39,6 +39,7 @@ func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName, host s
 		j.lastConfig = newConfig
 
 		if loggerConfig.Enable {
+			host := getHost()
 			j.journal = journal.NewFileJournal(
 				loggerConfig.Config,
 				moduleName,
@@ -71,6 +72,16 @@ func (j *RxJournal) Error(event string, req []byte, res []byte, err error) error
 
 func (j *RxJournal) Close() error {
 	return j.journal.Close()
+}
+
+func getHost() string {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return "unknown"
+	}
+	defer conn.Close()
+
+	return conn.LocalAddr().(*net.UDPAddr).IP.To4().String()
 }
 
 func NewDefaultRxJournal(journalServiceClient *backend.RxGrpcClient) *RxJournal {
