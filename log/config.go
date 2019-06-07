@@ -52,7 +52,7 @@ func (c Config) GetDirectory() string {
 }
 
 func (c Config) GetFilePrefixAndExt() (string, string) {
-	filename := filepath.Base(c.Filename)
+	filename := filepath.Base(c.GetFilename())
 	ext := filepath.Ext(filename)
 	prefix := filename[:len(filename)-len(ext)] + "-"
 	return prefix, ext
