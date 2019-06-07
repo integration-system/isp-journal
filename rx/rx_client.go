@@ -23,31 +23,42 @@ type Config struct {
 type RxJournal struct {
 	journal       journal.Journal
 	serviceClient *backend.RxGrpcClient
-	lastConfig    map[string]interface{}
+	curState      state
 }
 
 func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName string) {
-	newConfig := map[string]interface{}{
-		"moduleName": moduleName,
-		"config":     loggerConfig,
+	newState := state{
+		host:       getHost(),
+		moduleName: moduleName,
+		cfg:        loggerConfig,
 	}
-	if !cmp.Equal(j.lastConfig, newConfig) {
+	if !cmp.Equal(j.curState, newState) {
 		if j.journal != nil {
 			_ = j.journal.Close()
 			j.journal = nil
 		}
-		j.lastConfig = newConfig
+		j.curState = newState
 
 		if loggerConfig.Enable {
-			host := getHost()
 			j.journal = journal.NewFileJournal(
 				loggerConfig.Config,
 				moduleName,
-				host,
-				journal.WithAfterRotation(transfer.TransferAndDeleteLogFile(j.serviceClient, moduleName, host)),
-				journal.WithCollectingExistedLogs(transfer.TransferAndDeleteLogFiles(j.serviceClient, moduleName, host)),
+				newState.host,
+				journal.WithAfterRotation(transfer.TransferAndDeleteLogFile(j.serviceClient, moduleName, newState.host)),
 			)
 		}
+	}
+}
+
+func (j *RxJournal) CollectAndTransferExistedLogs() {
+	s := j.curState
+	if !s.cfg.Enable {
+		return
+	}
+
+	logFiles, _ := log.CollectExistedLogs(s.cfg.Config)
+	if len(logFiles) > 0 {
+		go transfer.TransferAndDeleteLogFiles(j.serviceClient, s.moduleName, s.host)
 	}
 }
 
@@ -74,10 +85,15 @@ func (j *RxJournal) Close() error {
 	return j.journal.Close()
 }
 
+type state struct {
+	host       string
+	moduleName string
+	cfg        Config
+}
+
 func NewDefaultRxJournal(journalServiceClient *backend.RxGrpcClient) *RxJournal {
 	return &RxJournal{
 		serviceClient: journalServiceClient,
-		lastConfig:    make(map[string]interface{}),
 	}
 }
 
