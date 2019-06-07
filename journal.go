@@ -80,13 +80,5 @@ func NewFileJournal(loggerConfig log.Config, moduleName, host string, opts ...Op
 
 	j.log = log.NewDefaultLogger(loggerConfig, log.WithAfterRotation(j.afterRotation))
 
-	if j.existedLogsCollector != nil {
-		logFiles, _ := log.CollectExistedLogs(loggerConfig) //TODO do something with error
-
-		if len(logFiles) > 0 {
-			go j.existedLogsCollector(logFiles)
-		}
-	}
-
 	return j
 }
