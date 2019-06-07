@@ -58,7 +58,7 @@ func (j *RxJournal) CollectAndTransferExistedLogs() {
 
 	logFiles, _ := log.CollectExistedLogs(s.Cfg.Config)
 	if len(logFiles) > 0 {
-		go transfer.TransferAndDeleteLogFiles(j.serviceClient, s.ModuleName, s.Host)
+		transfer.TransferAndDeleteLogFiles(j.serviceClient, s.ModuleName, s.Host)
 	}
 }
 
