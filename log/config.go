@@ -22,7 +22,7 @@ func (c Config) GetFilename() string {
 		name = c.Filename
 	}
 	if c.IsCompress() {
-		name += ".gzip"
+		name += ".gz"
 	}
 	return name
 }

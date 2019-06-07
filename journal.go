@@ -1,15 +1,10 @@
 package journal
 
 import (
-	"github.com/golang/protobuf/proto"
 	"github.com/integration-system/isp-journal/entry"
 	"github.com/integration-system/isp-journal/log"
 	"io"
 	"time"
-)
-
-var (
-	nextLine = byte('\n')
 )
 
 type Journal interface {
@@ -42,12 +37,11 @@ func (j *fileJournal) Log(level entry.Level, event string, req []byte, res []byt
 		e.ErrorText = err.Error()
 	}
 
-	bytes, err := proto.Marshal(e)
+	bytes, err := entry.MarshalToBytes(e)
 	if err != nil {
 		return err
 	}
 
-	bytes = append(bytes, nextLine)
 	_, err = j.log.Write(bytes)
 	return err
 }
