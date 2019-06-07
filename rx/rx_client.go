@@ -28,9 +28,9 @@ type RxJournal struct {
 
 func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName string) {
 	newState := state{
-		host:       getHost(),
-		moduleName: moduleName,
-		cfg:        loggerConfig,
+		Host:       getHost(),
+		ModuleName: moduleName,
+		Cfg:        loggerConfig,
 	}
 	if !cmp.Equal(j.curState, newState) {
 		if j.journal != nil {
@@ -43,8 +43,8 @@ func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName string)
 			j.journal = journal.NewFileJournal(
 				loggerConfig.Config,
 				moduleName,
-				newState.host,
-				journal.WithAfterRotation(transfer.TransferAndDeleteLogFile(j.serviceClient, moduleName, newState.host)),
+				newState.Host,
+				journal.WithAfterRotation(transfer.TransferAndDeleteLogFile(j.serviceClient, moduleName, newState.Host)),
 			)
 		}
 	}
@@ -52,13 +52,13 @@ func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName string)
 
 func (j *RxJournal) CollectAndTransferExistedLogs() {
 	s := j.curState
-	if !s.cfg.Enable {
+	if !s.Cfg.Enable {
 		return
 	}
 
-	logFiles, _ := log.CollectExistedLogs(s.cfg.Config)
+	logFiles, _ := log.CollectExistedLogs(s.Cfg.Config)
 	if len(logFiles) > 0 {
-		go transfer.TransferAndDeleteLogFiles(j.serviceClient, s.moduleName, s.host)
+		go transfer.TransferAndDeleteLogFiles(j.serviceClient, s.ModuleName, s.Host)
 	}
 }
 
@@ -86,9 +86,9 @@ func (j *RxJournal) Close() error {
 }
 
 type state struct {
-	host       string
-	moduleName string
-	cfg        Config
+	Host       string
+	ModuleName string
+	Cfg        Config
 }
 
 func NewDefaultRxJournal(journalServiceClient *backend.RxGrpcClient) *RxJournal {
