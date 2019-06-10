@@ -17,7 +17,8 @@ var (
 
 type Config struct {
 	log.Config
-	Enable bool
+	Enable               bool
+	EnableRemoteTransfer bool
 }
 
 type RxJournal struct {
@@ -40,11 +41,15 @@ func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName string)
 		j.curState = newState
 
 		if loggerConfig.Enable {
+			opts := make([]journal.Option, 0)
+			if loggerConfig.EnableRemoteTransfer {
+				opts = append(opts, journal.WithAfterRotation(transfer.TransferAndDeleteLogFile(j.serviceClient, moduleName, newState.Host)))
+			}
 			j.journal = journal.NewFileJournal(
 				loggerConfig.Config,
 				moduleName,
 				newState.Host,
-				journal.WithAfterRotation(transfer.TransferAndDeleteLogFile(j.serviceClient, moduleName, newState.Host)),
+				opts...,
 			)
 		}
 	}
@@ -52,7 +57,7 @@ func (j *RxJournal) ReceiveConfiguration(loggerConfig Config, moduleName string)
 
 func (j *RxJournal) CollectAndTransferExistedLogs() {
 	s := j.curState
-	if !s.Cfg.Enable {
+	if !s.Cfg.Enable || !s.Cfg.EnableRemoteTransfer {
 		return
 	}
 
