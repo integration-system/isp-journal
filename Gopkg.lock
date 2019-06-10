@@ -10,6 +10,14 @@
   version = "v9"
 
 [[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = "UT"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:57bf08b3ada129d5d845734e80096504898445ece891e87ce371d5d67a18a079"
   name = "github.com/golang/protobuf"
   packages = [
@@ -38,7 +46,16 @@
   revision = "ac5582987a2f25e8743e0ebb7259312adda05c23"
 
 [[projects]]
-  digest = "1:eca4888ac7a2b37c8ef6ed8bf8a2e29a65957898881763f0c90bf0ff800f4808"
+  branch = "master"
+  digest = "1:517d59ce9a30ba8dc8e580d7678c487863867a6783f5d8fd3daca95dd5f686d7"
+  name = "github.com/integration-system/isp-io"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "1ec1f910ec2d314a9d770e2c9ea1ac3444582d59"
+
+[[projects]]
+  branch = "master"
+  digest = "1:30604e715b411001b497cbcdc785441af6ec5bd160bbeb0b0e144457d4be7e3a"
   name = "github.com/integration-system/isp-lib"
   packages = [
     "backend",
@@ -49,8 +66,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "566084443c9831031608dd5d096d10dffa34cd1c"
-  version = "v1.3.0"
+  revision = "6afdc5b48c83b7e7b613df637fd5cfed0b1aeab3"
 
 [[projects]]
   digest = "1:e4f630893d2bbf8c268eba14e7cc92ef8844ee259a45e21ea77cf7656544cb7e"
@@ -112,12 +128,28 @@
   version = "1.0.1"
 
 [[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  pruneopts = "UT"
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:04457f9f6f3ffc5fea48e71d62f2ca256637dee0a04d710288e27e05c8b41976"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   pruneopts = "UT"
   revision = "839c75faf7f98a33d445d181f3018b5c3409a45e"
   version = "v1.4.2"
+
+[[projects]]
+  digest = "1:972c2427413d41a1e06ca4897e8528e5a1622894050e2f527b38ddf0f343f759"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  pruneopts = "UT"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
 
 [[projects]]
   digest = "1:39a425f98fb19427061a693fe6bf0683c9bddec4b25b17067e34fdb465e39cb9"
@@ -244,12 +276,14 @@
   analyzer-version = 1
   input-imports = [
     "github.com/golang/protobuf/proto",
+    "github.com/integration-system/go-cmp/cmp",
+    "github.com/integration-system/isp-io",
     "github.com/integration-system/isp-lib/backend",
+    "github.com/integration-system/isp-lib/logger",
     "github.com/integration-system/isp-lib/streaming",
     "github.com/json-iterator/go",
-    "google.golang.org/grpc/codes",
+    "github.com/stretchr/testify/assert",
     "google.golang.org/grpc/metadata",
-    "google.golang.org/grpc/status",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
