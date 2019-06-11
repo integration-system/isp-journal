@@ -87,6 +87,9 @@ func (j *RxJournal) Error(event string, req []byte, res []byte, err error) error
 }
 
 func (j *RxJournal) Close() error {
+	if j.journal == nil {
+		return nil
+	}
 	return j.journal.Close()
 }
 
