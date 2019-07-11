@@ -40,9 +40,10 @@ func CollectExistedLogs(loggerConfig Config) ([]LogFile, error) {
 		}
 		if t, err := parseTimeFormFilename(f.Name(), prefix, ext); err == nil {
 			logFiles = append(logFiles, LogFile{
-				FileInfo:  f,
-				CreatedAt: t,
-				FullPath:  path.Join(loggerConfig.GetDirectory(), f.Name()),
+				Compressed: path.Ext(f.Name()) == ".gz",
+				FileInfo:   f,
+				CreatedAt:  t,
+				FullPath:   path.Join(loggerConfig.GetDirectory(), f.Name()),
 			})
 		}
 		// error parsing means that the suffix at the end was not generated
