@@ -28,6 +28,7 @@ func (j *fileJournal) Log(level entry.Level, event string, req []byte, res []byt
 	e := &entry.Entry{
 		ModuleName: j.moduleName,
 		Host:       j.host,
+		Event:      event,
 		Time:       entry.FormatTime(time.Now().UTC()),
 		Level:      string(level),
 		Request:    req,
