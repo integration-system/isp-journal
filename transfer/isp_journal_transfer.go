@@ -33,18 +33,14 @@ type LogInfo struct {
 
 func TransferAndDeleteLogFile(client *backend.RxGrpcClient, moduleName, host string) func(file log.LogFile) {
 	return func(log log.LogFile) {
-		if log.Size() > 0 {
-			doTransfer(client, log, moduleName, host)
-		}
+		doTransfer(client, log, moduleName, host)
 	}
 }
 
 func TransferAndDeleteLogFiles(client *backend.RxGrpcClient, moduleName, host string) func(logs []log.LogFile) {
 	return func(logs []log.LogFile) {
 		for _, f := range logs {
-			if f.Size() > 0 {
-				doTransfer(client, f, moduleName, host)
-			}
+			doTransfer(client, f, moduleName, host)
 		}
 	}
 }
