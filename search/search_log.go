@@ -119,7 +119,11 @@ func (s *searchLog) readFiles(files []string) error {
 }
 
 func (s *searchLog) extractData(path string) error {
-	reader, err := NewLogReader(path, true, s.filter)
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	reader, err := NewLogReader(file, true, s.filter)
 	if err != nil {
 		return err
 	}
