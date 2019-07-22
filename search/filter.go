@@ -28,7 +28,11 @@ type Filter struct {
 }
 
 func NewFilter(req SearchRequest) (Filter, error) {
-	f := Filter{}
+	f := Filter{
+		hostByExist:  make(map[string]bool),
+		eventByExist: make(map[string]bool),
+		levelByExist: make(map[string]bool),
+	}
 	for _, value := range req.Host {
 		f.hostByExist[value] = true
 	}
