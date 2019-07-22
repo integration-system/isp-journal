@@ -5,7 +5,7 @@ import (
 	"compress/gzip"
 	io2 "github.com/integration-system/isp-io"
 	"github.com/integration-system/isp-journal/entry"
-	"os"
+	"io"
 )
 
 type logReader struct {
@@ -13,13 +13,8 @@ type logReader struct {
 	reader io2.ReadPipe
 }
 
-func NewLogReader(path string, gzipped bool, filter Filter) (*logReader, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	pipe := io2.NewReadPipe(file)
+func NewLogReader(reader io.Reader, gzipped bool, filter Filter) (*logReader, error) {
+	pipe := io2.NewReadPipe(reader)
 
 	pipe.Unshift(bufio.NewReaderSize(pipe.Last(), bufSize))
 	if gzipped {
