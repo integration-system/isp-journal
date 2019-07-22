@@ -84,7 +84,7 @@ func parseTimeFormFilename(filename, prefix, ext string) (time.Time, error) {
 
 // openNewAndRenameExisted opens a new log file for writing, moving any old log file out of the
 // way.  This methods assumes the file has already been closed.
-func openNewAndRenameExisted(c Config) (io2.Pipe, string, error) {
+func openNewAndRenameExisted(c Config) (io2.WritePipe, string, error) {
 	err := os.MkdirAll(c.GetDirectory(), 0755)
 	if err != nil {
 		return nil, "", fmt.Errorf("can't make directories for new logfile: %s", err)
@@ -117,13 +117,12 @@ func openNewAndRenameExisted(c Config) (io2.Pipe, string, error) {
 	return pipe, newname, nil
 }
 
-func makePipe(c Config, srcFile string, flag int, mode os.FileMode) (io2.Pipe, error) {
+func makePipe(c Config, srcFile string, flag int, mode os.FileMode) (io2.WritePipe, error) {
 	f, err := os.OpenFile(srcFile, flag, mode)
 	if err != nil {
 		return nil, err
 	}
-	p := io2.NewPipe()
-	p.Unshift(f)
+	p := io2.NewWritePipe(f)
 
 	if c.IsBuffered() {
 		bufWr := bufio.NewWriterSize(p.Last(), c.GetBufferSize())

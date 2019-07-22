@@ -20,7 +20,7 @@ type defaultLogger struct {
 	afterRotation func(prevFile LogFile)
 	curSize       int64
 	wrLock        sync.Mutex
-	curWr         io2.Pipe
+	curWr         io2.WritePipe
 	rotateChan    chan struct{}
 	rotateErrChan chan error
 	closeChan     chan struct{}
