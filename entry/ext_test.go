@@ -43,3 +43,17 @@ func TestMarshalUnmarshal(t *testing.T) {
 	b2, _ := json.Marshal(e2)
 	a.EqualValues(copy0, b2)
 }
+
+func BenchmarkUnmarshalNext(b *testing.B) {
+	bs, err := MarshalToBytes(e)
+	if err != nil {
+		panic(err)
+	}
+	for i := 0; i < b.N; i++ {
+		buffer := bytes.NewBuffer(bs)
+		_, err := UnmarshalNext(buffer)
+		if err != nil {
+			panic(err)
+		}
+	}
+}

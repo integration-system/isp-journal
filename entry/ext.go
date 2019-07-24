@@ -1,6 +1,7 @@
 package entry
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -25,7 +26,7 @@ const (
 var (
 	pool = sync.Pool{
 		New: func() interface{} {
-			return make([]byte, 4096)
+			return bytes.NewBuffer(make([]byte, 0, 4096))
 		},
 	}
 )
@@ -49,47 +50,34 @@ func MarshalToBytes(entry *Entry) ([]byte, error) {
 }
 
 func UnmarshalNext(r io.Reader) (*Entry, error) {
-	buf := pool.Get().([]byte)
-
-	uintBuf, dataBuf := buf[:4], buf[4:]
-	n, err := r.Read(uintBuf)
-	if err != nil {
+	buf := pool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
 		pool.Put(buf)
+	}()
+
+	n, err := io.CopyN(buf, r, 4)
+	if err != nil {
 		return nil, err
 	}
 	if n != 4 {
-		pool.Put(buf)
 		return nil, errors.New("expecting int32 data length prefix")
 	}
-	l := int(binary.LittleEndian.Uint32(uintBuf))
+	l := int64(binary.LittleEndian.Uint32(buf.Bytes()))
 
-	size := len(dataBuf)
-	toRead := dataBuf
-	pooled := buf
-	if size < l {
-		toRead = append(dataBuf, make([]byte, l-size)...)
-		pooled = toRead
-	} else if size > l {
-		toRead = dataBuf[:l]
-	}
-
-	n, err = r.Read(toRead)
+	buf.Reset()
+	n, err = io.CopyN(buf, r, l)
 	if err != nil {
-		pool.Put(pooled)
 		return nil, err
 	}
 	if n != l {
-		pool.Put(pooled)
 		return nil, fmt.Errorf("not enough %d bytes", l-n)
 	}
 
 	e := &Entry{}
-	if err := proto.Unmarshal(toRead, e); err != nil {
-		pool.Put(pooled)
+	if err := proto.Unmarshal(buf.Bytes(), e); err != nil {
 		return nil, err
 	}
-
-	pool.Put(pooled)
 
 	return e, nil
 }
