@@ -7,25 +7,38 @@ import (
 	"time"
 )
 
-type SearchRequest struct {
-	ModuleName string `valid:"required~Required"`
-	From       time.Time
-	To         time.Time
-	Host       []string
-	Event      []string
-	Level      []string
-	Limit      int `valid:"required~Required,range(1|10000)"`
-	Offset     int
-}
+type (
+	SearchRequest struct {
+		ModuleName string `valid:"required~Required"`
+		From       time.Time
+		To         time.Time
+		Host       []string
+		Event      []string
+		Level      []string
+		Limit      int `valid:"required~Required,range(1|10000)"`
+		Offset     int
+	}
 
-type Filter struct {
-	hostByExist  map[string]bool
-	eventByExist map[string]bool
-	levelByExist map[string]bool
+	SearchResponse struct {
+		ModuleName string `json:",omitempty"`
+		Host       string `json:",omitempty"`
+		Event      string `json:",omitempty"`
+		Level      string `json:",omitempty"`
+		Time       string `json:",omitempty"`
+		Request    string `json:",omitempty"`
+		Response   string `json:",omitempty"`
+		ErrorText  string `json:",omitempty"`
+	}
 
-	from time.Time
-	to   time.Time
-}
+	Filter struct {
+		hostByExist  map[string]bool
+		eventByExist map[string]bool
+		levelByExist map[string]bool
+
+		from time.Time
+		to   time.Time
+	}
+)
 
 func NewFilter(req SearchRequest) (Filter, error) {
 	f := Filter{

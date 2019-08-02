@@ -13,6 +13,7 @@ type Journal interface {
 	Info(event string, req []byte, res []byte) error
 	Warn(event string, req []byte, res []byte, err error) error
 	Error(event string, req []byte, res []byte, err error) error
+	Rotate() error
 }
 
 type fileJournal struct {
@@ -57,6 +58,10 @@ func (j *fileJournal) Warn(event string, req []byte, res []byte, err error) erro
 
 func (j *fileJournal) Error(event string, req []byte, res []byte, err error) error {
 	return j.Log(entry.LevelError, event, req, res, err)
+}
+
+func (j *fileJournal) Rotate() error {
+	return j.log.Rotate()
 }
 
 func (j *fileJournal) Close() error {

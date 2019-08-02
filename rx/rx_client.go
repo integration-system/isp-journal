@@ -86,6 +86,10 @@ func (j *RxJournal) Error(event string, req []byte, res []byte, err error) error
 	return j.Log(entry.LevelError, event, req, res, err)
 }
 
+func (j *RxJournal) Rotate() error {
+	return j.journal.Rotate()
+}
+
 func (j *RxJournal) Close() error {
 	if j.journal == nil {
 		return nil
