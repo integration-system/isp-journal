@@ -7,11 +7,11 @@ import (
 )
 
 type Config struct {
-	Filename        string
-	MaxSizeMb       int
-	RotateTimeoutMs int
-	Compress        bool
-	BufferSize      int
+	Filename        string `schema:"Имя файла,путь до файла в который будут записываться логи"`
+	MaxSizeMb       int    `schema:"Максимальный размер файла,ограничение по размеру файла после достижения которого логи будут записываться в новый файл"`
+	RotateTimeoutMs int    `schema:"Время чередования файлов,ограничение по времени записи после достижения которого логи будут записываться в новый файл"`
+	Compress        bool   `schema:"Сжатие логов,архивирует файлы в gzip"`
+	BufferSize      int    `schema:"Размер буфера,при указании разбивает данные и записывает их в файл по частям"`
 }
 
 func (c Config) GetFilename() string {

@@ -17,8 +17,8 @@ var (
 
 type Config struct {
 	log.Config
-	Enable               bool
-	EnableRemoteTransfer bool
+	Enable               bool `schema:"Включение/отключение журналирования"`
+	EnableRemoteTransfer bool `schema:"Отгрузка старых журналов,при включении старые файлы журналов будут отгружаются в сервис для isp-journal-service"`
 }
 
 type RxJournal struct {
