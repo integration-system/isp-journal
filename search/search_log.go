@@ -15,7 +15,7 @@ const (
 	dirLayout  = "2006-01-02"
 	fileLayout = "2006-01-02T15-04-05.000"
 
-	bufSize   = 8 * 1024
+	bufSize   = 64 * 1024
 	fileSplit = "__"
 	fileEnd   = ".log"
 )
@@ -140,8 +140,8 @@ func (s *searchLog) extractData(path string) error {
 		if entry != nil {
 			if continueReading, err := s.entriesHandler(entry); err != nil {
 				return err
-			} else if continueReading {
-				continue
+			} else if !continueReading {
+				return nil
 			}
 		}
 	}
