@@ -74,7 +74,7 @@ func (s *searchLog) findDirs() ([]string, error) {
 		for _, dateDirInfo := range arrayDateDir {
 			if dirName, err := time.Parse(dirLayout, dateDirInfo.Name()); err != nil {
 				continue
-			} else if dirName.After(f) && dirName.Before(t) {
+			} else if (dirName.After(f) || dirName.Equal(f)) && (dirName.Before(t) || dirName.Equal(t)) {
 				dirs = append(dirs, dateDirInfo.Name())
 			}
 		}
