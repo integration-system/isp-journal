@@ -64,23 +64,18 @@ func NewFilter(req SearchRequest) (Filter, error) {
 }
 
 func (f *Filter) defineTimeForSearch(from, to time.Time) error {
-	if from.IsZero() {
-		from = time.Now().UTC().AddDate(0, 0, -1)
+	f.from = from.UTC()
+	if to.IsZero() {
+		f.to = time.Now().UTC()
 	} else {
-		from = from.UTC()
+		f.to = to.UTC()
 	}
 
-	if to.IsZero() {
-		to = time.Now().UTC()
+	if f.to.Before(f.from) {
+		return status.Error(codes.InvalidArgument, "expected FROM will before TO")
 	} else {
-		to = to.UTC()
-		if to.Before(from) {
-			return status.Error(codes.InvalidArgument, "expected FROM will before TO")
-		}
+		return nil
 	}
-	f.from = from
-	f.to = to
-	return nil
 }
 
 func (f *Filter) checkTimeField(timeString string) (bool, error) {

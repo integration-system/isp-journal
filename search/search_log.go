@@ -51,29 +51,35 @@ func (s *searchLog) Search(req SearchRequest) error {
 }
 
 func (s *searchLog) getFilesPath(moduleName string) ([]string, error) {
-	dirs := s.findDirs()
-	if len(dirs) == 0 {
+	if dirs, err := s.findDirs(); err != nil {
+		return nil, err
+	} else if len(dirs) == 0 {
 		return nil, nil
+	} else {
+		return s.findFiles(dirs, moduleName)
 	}
-	return s.findFiles(dirs, moduleName)
 }
 
-func (s *searchLog) findDirs() []string {
-	from := s.filter.from
-	to := s.filter.to
-	f := time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, from.Location())
-	t := time.Date(to.Year(), to.Month(), to.Day(), 0, 0, 0, 0, to.Location()).AddDate(0, 0, 1)
+func (s *searchLog) findDirs() ([]string, error) {
+	f := time.Date(
+		s.filter.from.Year(), s.filter.from.Month(), s.filter.from.Day(),
+		0, 0, 0, 0, s.filter.from.Location())
+	t := time.Date(
+		s.filter.to.Year(), s.filter.to.Month(), s.filter.to.Day(),
+		0, 0, 0, 0, s.filter.to.Location()).AddDate(0, 0, 1)
 	dirs := make([]string, 0)
-	for {
-		if f.Before(t) {
-			dirs = append(dirs, f.Format(dirLayout))
-			f = f.AddDate(0, 0, 1)
-		} else {
-			dirs = append(dirs, f.Format(dirLayout))
-			break
+	if arrayDateDir, err := ioutil.ReadDir(s.baseDir); err != nil {
+		return nil, err
+	} else {
+		for _, dateDirInfo := range arrayDateDir {
+			if dirName, err := time.Parse(dirLayout, dateDirInfo.Name()); err != nil {
+				continue
+			} else if dirName.After(f) && dirName.Before(t) {
+				dirs = append(dirs, dateDirInfo.Name())
+			}
 		}
 	}
-	return dirs
+	return dirs, nil
 }
 
 func (s *searchLog) findFiles(dirs []string, middleFile string) ([]string, error) {
@@ -111,37 +117,42 @@ func (s *searchLog) findFiles(dirs []string, middleFile string) ([]string, error
 
 func (s *searchLog) readFiles(files []string) error {
 	for _, filePath := range files {
-		if err := s.extractData(filePath); err != nil {
+		if continueRead, err := s.extractData(filePath); err != nil {
 			return err
+		} else if !continueRead {
+			return nil
 		}
 	}
 	return nil
 }
 
-func (s *searchLog) extractData(path string) error {
+func (s *searchLog) extractData(path string) (bool, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return err
+		return false, err
 	}
 	reader, err := NewLogReader(file, true, s.filter)
-	if err != nil {
-		return err
+	if reader != nil {
+		defer func() { _ = reader.Close() }()
 	}
-	defer reader.Close()
+	if err != nil {
+		if err == io.EOF {
+			return true, nil
+		}
+		return false, err
+	}
 
 	for {
-		entry, err := reader.FilterNext()
-		if err != nil {
+		if extractedEntry, err := reader.FilterNext(); err != nil {
 			if err == io.EOF {
-				return nil
+				return true, nil
 			}
-			return err
-		}
-		if entry != nil {
-			if continueReading, err := s.entriesHandler(entry); err != nil {
-				return err
-			} else if !continueReading {
-				return nil
+			return false, err
+		} else if extractedEntry != nil {
+			if continueRead, err := s.entriesHandler(extractedEntry); err != nil {
+				return false, err
+			} else if !continueRead {
+				return false, nil
 			}
 		}
 	}
