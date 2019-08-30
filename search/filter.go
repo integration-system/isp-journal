@@ -37,6 +37,8 @@ type (
 
 		from time.Time
 		to   time.Time
+
+		moduleName string
 	}
 )
 
@@ -59,6 +61,8 @@ func NewFilter(req SearchRequest) (Filter, error) {
 	if err := f.defineTimeForSearch(req.From, req.To); err != nil {
 		return f, err
 	}
+
+	f.moduleName = req.ModuleName
 
 	return f, nil
 }
