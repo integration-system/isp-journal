@@ -13,35 +13,41 @@ type SyncSearchLog struct {
 	currentReader *logReader
 }
 
+func NewSyncSearchService(req SearchRequest, baseDir string) (*SyncSearchLog, error) {
+	if filter, err := NewFilter(req); err != nil {
+		return nil, err
+	} else if files, err := findAllMatchedFiles(filter, baseDir); err != nil {
+		return nil, err
+	} else {
+		return &SyncSearchLog{
+			filter: filter,
+			files:  files,
+		}, nil
+	}
+}
+
 // return next matched log entry, never return io.EOF, if data source exhausted return false in second param
 // idempotent return the same error while reading or opening file
 func (s *SyncSearchLog) Next() (*entry.Entry, bool, error) {
 	if s.currentReader == nil {
-		hasMore, err := s.openNextReader()
-		if err != nil {
+		if hasMore, err := s.openNextReader(); err != nil || !hasMore {
 			return nil, false, err
-		}
-		if !hasMore {
-			return nil, false, nil
 		}
 	}
 
 	for {
-		entry, err := s.currentReader.FilterNext()
-		if err != nil {
+		if entry, err := s.currentReader.FilterNext(); err != nil {
 			if err == io.EOF {
 				_ = s.currentReader.Close()
-				hasMore, err := s.openNextReader()
-				if err != nil {
+				s.currentReader = nil
+				if hasMore, err := s.openNextReader(); err != nil || !hasMore {
 					return nil, false, err
-				}
-				if !hasMore {
-					return nil, false, nil
+				} else {
+					continue
 				}
 			}
 			return nil, false, err
-		}
-		if entry != nil {
+		} else if entry != nil {
 			return entry, true, nil
 		}
 	}
@@ -53,7 +59,6 @@ func (s *SyncSearchLog) openNextReader() (bool, error) {
 			return false, nil
 		}
 		currentFile, files := s.files[0], s.files[1:]
-
 		file, err := os.Open(currentFile)
 		if err != nil {
 			return false, fmt.Errorf("could not open file %s: %v", currentFile, err)
@@ -66,28 +71,8 @@ func (s *SyncSearchLog) openNextReader() (bool, error) {
 			}
 			return false, fmt.Errorf("could not open log reader %s: %v", currentFile, err)
 		}
-
 		s.files = files
 		s.currentReader = currentReader
-
 		return true, err
 	}
-}
-
-func NewSyncSearch(req SearchRequest, baseDir string) (*SyncSearchLog, error) {
-	filter, err := NewFilter(req)
-	if err != nil {
-		return nil, err
-	}
-
-	files, err := findAllMatchedFiles(filter, baseDir)
-	if err != nil {
-		return nil, err
-	}
-
-	return &SyncSearchLog{
-		filter: filter,
-		files:  files,
-		closed: false,
-	}, nil
 }

@@ -9,6 +9,15 @@ import (
 	"time"
 )
 
+const (
+	dirLayout  = "2006-01-02"
+	fileLayout = "2006-01-02T15-04-05.000"
+
+	bufSize   = 64 * 1024
+	fileSplit = "__"
+	fileEnd   = ".log"
+)
+
 func findAllMatchedFiles(filter Filter, baseDir string) ([]string, error) {
 	if dirs, err := findDirs(filter, baseDir); err != nil {
 		return nil, err

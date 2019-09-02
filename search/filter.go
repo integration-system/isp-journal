@@ -19,6 +19,12 @@ type (
 		Offset     int
 	}
 
+	SearchWithCursorRequest struct {
+		Request   SearchRequest
+		CursorId  string
+		BatchSize int `valid:"required~Required,range(1|10000)"`
+	}
+
 	SearchResponse struct {
 		ModuleName string `json:",omitempty"`
 		Host       string `json:",omitempty"`
@@ -28,6 +34,12 @@ type (
 		Request    string `json:",omitempty"`
 		Response   string `json:",omitempty"`
 		ErrorText  string `json:",omitempty"`
+	}
+
+	SearchWithCursorResponse struct {
+		CursorId string
+		Items    []SearchResponse
+		HasMore  bool
 	}
 
 	Filter struct {

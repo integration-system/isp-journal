@@ -18,11 +18,11 @@ func NewLogReader(reader io.Reader, gzipped bool, filter Filter) (*logReader, er
 
 	pipe.Unshift(bufio.NewReaderSize(pipe.Last(), bufSize))
 	if gzipped {
-		gzipReader, err := gzip.NewReader(pipe.Last())
-		if err != nil {
+		if gzipReader, err := gzip.NewReader(pipe.Last()); err != nil {
 			return nil, err
+		} else {
+			pipe.Unshift(gzipReader)
 		}
-		pipe.Unshift(gzipReader)
 	}
 
 	return &logReader{
@@ -32,17 +32,13 @@ func NewLogReader(reader io.Reader, gzipped bool, filter Filter) (*logReader, er
 }
 
 func (s *logReader) FilterNext() (*entry.Entry, error) {
-	entry, err := entry.UnmarshalNext(s.reader)
-	if err != nil {
+	if extractedEntry, err := entry.UnmarshalNext(s.reader); err != nil {
 		return nil, err
-	}
-	if s.filter.checkEntry(entry) {
-		if ok, err := s.filter.checkTimeField(entry.Time); err != nil {
+	} else if s.filter.checkEntry(extractedEntry) {
+		if ok, err := s.filter.checkTimeField(extractedEntry.Time); err != nil || !ok {
 			return nil, err
-		} else if !ok {
-			return nil, nil
 		}
-		return entry, nil
+		return extractedEntry, nil
 	}
 	return nil, nil
 }
