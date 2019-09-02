@@ -48,24 +48,30 @@ func (s *SyncSearchLog) Next() (*entry.Entry, bool, error) {
 }
 
 func (s *SyncSearchLog) openNextReader() (bool, error) {
-	if len(s.files) == 0 {
-		return false, nil
-	}
-	currentFile, files := s.files[0], s.files[1:]
+	for {
+		if len(s.files) == 0 {
+			return false, nil
+		}
+		currentFile, files := s.files[0], s.files[1:]
 
-	file, err := os.Open(currentFile)
-	if err != nil {
-		return false, fmt.Errorf("could not open file %s: %v", currentFile, err)
-	}
-	currentReader, err := NewLogReader(file, true, s.filter)
-	if err != nil {
-		return false, fmt.Errorf("could not open log reader %s: %v", currentFile, err)
-	}
+		file, err := os.Open(currentFile)
+		if err != nil {
+			return false, fmt.Errorf("could not open file %s: %v", currentFile, err)
+		}
+		currentReader, err := NewLogReader(file, true, s.filter)
+		if err != nil {
+			if err == io.EOF {
+				s.files = files
+				continue
+			}
+			return false, fmt.Errorf("could not open log reader %s: %v", currentFile, err)
+		}
 
-	s.files = files
-	s.currentReader = currentReader
+		s.files = files
+		s.currentReader = currentReader
 
-	return true, err
+		return true, err
+	}
 }
 
 func NewSyncSearch(req SearchRequest, baseDir string) (*SyncSearchLog, error) {
