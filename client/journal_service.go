@@ -6,8 +6,9 @@ import (
 )
 
 const (
-	scheme       = "http://"
-	searchMethod = "/api/journal/log/search"
+	scheme                 = "http://"
+	searchMethod           = "/api/journal/log/search"
+	searchWithCursorMethod = "/api/journal/log/search_with_cursor"
 )
 
 func NewJournalServiceClient(restClient http.RestClient) *journalServiceClient {
@@ -26,6 +27,15 @@ func (c *journalServiceClient) ReceiveConfiguration(gateHost string) {
 func (c *journalServiceClient) Search(request search.SearchRequest) ([]search.SearchResponse, error) {
 	response := make([]search.SearchResponse, 0)
 	if err := c.client.Post(c.gateHost+searchMethod, &request, &response); err != nil {
+		return nil, err
+	} else {
+		return response, nil
+	}
+}
+
+func (c *journalServiceClient) SearchWithCursor(request search.SearchWithCursorRequest) (*search.SearchWithCursorResponse, error) {
+	response := new(search.SearchWithCursorResponse)
+	if err := c.client.Post(c.gateHost+searchWithCursorMethod, &request, response); err != nil {
 		return nil, err
 	} else {
 		return response, nil
