@@ -63,36 +63,49 @@ func findFiles(dirs []string, filter Filter, baseDir string) ([]string, error) {
 			}
 		}
 		for _, fileInfo := range filesInfo {
-			fileName := strings.Split(fileInfo.Name(), fileSplit)
-			if !filter.checkHost(fileName[0]) {
-				continue
-			}
-			if len(fileName) < 2 {
-				logger.Warnf("invalid file name '%s'", fileInfo.Name())
-				continue
-			}
-			fileTimePartName := strings.Split(fileName[1], fileEnd)
-			if ok, err := checkFileNameTime(fileTimePartName[0], filter); err != nil {
+			if ok, stop, err := checkFileName(fileInfo.Name(), filter); err != nil {
 				return nil, err
 			} else if !ok {
 				continue
+			} else {
+				response = append(response, path.Join(dir, fileInfo.Name()))
+				if stop {
+					return response, nil
+				}
 			}
-			response = append(response, path.Join(dir, fileInfo.Name()))
 		}
 	}
 	return response, nil
 }
 
-func checkFileNameTime(timeString string, filter Filter) (bool, error) {
+func checkFileName(name string, filter Filter) (ok, stop bool, err error) {
+	fileName := strings.Split(name, fileSplit)
+	if len(fileName) < 2 {
+		logger.Warnf("invalid file name '%s'", name)
+		return false, false, nil
+	}
+
+	if !filter.checkHost(fileName[0]) {
+		return false, false, nil
+	}
+
+	fileTimePartName := strings.Split(fileName[1], fileEnd)
+	return checkFileNameTime(fileTimePartName[0], filter)
+}
+
+func checkFileNameTime(timeString string, filter Filter) (identifyName, stop bool, err error) {
+	stop = false
 	timeInfo, err := time.Parse(fileLayout, timeString)
 	if err != nil {
-		return false, err
+		return false, stop, err
 	}
 	to := filter.to.AddDate(0, 0, 1)
-	if (timeInfo.Before(to) ||
-		timeInfo.Equal(to)) &&
-		(timeInfo.After(filter.from) || timeInfo.Equal(filter.from)) {
-		return true, nil
+	if timeInfo.After(filter.to) || timeInfo.Equal(filter.to) {
+		stop = true
 	}
-	return false, nil
+	if (timeInfo.Before(to) || timeInfo.Equal(to)) &&
+		(timeInfo.After(filter.from) || timeInfo.Equal(filter.from)) {
+		return true, stop, nil
+	}
+	return false, stop, nil
 }
