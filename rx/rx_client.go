@@ -7,7 +7,7 @@ import (
 	"github.com/integration-system/isp-journal/entry"
 	"github.com/integration-system/isp-journal/log"
 	"github.com/integration-system/isp-journal/transfer"
-	"github.com/integration-system/isp-lib/backend"
+	"github.com/integration-system/isp-lib/v2/backend"
 	"net"
 )
 

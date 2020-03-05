@@ -1,7 +1,8 @@
 package search
 
 import (
-	"github.com/integration-system/isp-lib/logger"
+	log "github.com/integration-system/isp-log"
+	"github.com/integration-system/isp-log/stdcodes"
 	"io/ioutil"
 	"os"
 	"path"
@@ -81,7 +82,7 @@ func findFiles(dirs []string, filter Filter, baseDir string) ([]string, error) {
 func checkFileName(name string, filter Filter) (ok, stop bool, err error) {
 	fileName := strings.Split(name, fileSplit)
 	if len(fileName) < 2 {
-		logger.Warnf("invalid file name '%s'", name)
+		log.Warnf(stdcodes.ModuleDefaultRCReadError, "invalid file name '%s'", name)
 		return false, false, nil
 	}
 

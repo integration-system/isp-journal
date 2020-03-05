@@ -2,7 +2,7 @@ package client
 
 import (
 	"github.com/integration-system/isp-journal/search"
-	"github.com/integration-system/isp-lib/http"
+	"github.com/integration-system/isp-lib/v2/http"
 )
 
 const (

@@ -103,10 +103,10 @@ func openNewAndRenameExisted(c Config) (io2.WritePipe, string, error) {
 			return nil, "", fmt.Errorf("can't rename log file: %s", err)
 		}
 
-		/*// this is a no-op anywhere but linux
-		if err := chown(name, info); err != nil {
-			return err
-		}*/
+		// this is a no-op anywhere but linux
+		//if err := chown(name, info); err != nil {
+		//	return err
+		//}
 	}
 
 	pipe, err := makePipe(c, name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)

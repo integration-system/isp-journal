@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/integration-system/isp-journal/entry"
 	"github.com/integration-system/isp-journal/log"
-	"github.com/integration-system/isp-lib/backend"
-	"github.com/integration-system/isp-lib/logger"
-	"github.com/integration-system/isp-lib/streaming"
+	"github.com/integration-system/isp-lib/v2/backend"
+	"github.com/integration-system/isp-lib/v2/streaming"
+	logger "github.com/integration-system/isp-log"
+	"github.com/integration-system/isp-log/stdcodes"
 	"google.golang.org/grpc/metadata"
-	"time"
-
 	"os"
+	"time"
 )
 
 const (
@@ -87,11 +87,11 @@ func doTransfer(client *backend.RxGrpcClient, f log.LogFile, moduleName, host st
 	})
 
 	if err != nil {
-		logger.Errorf("could not transfer log file '%s': %v", f.FullPath, err)
+		logger.Errorf(stdcodes.ModuleDefaultRCReadError, "could not transfer log file '%s': %v", f.FullPath, err)
 	} else if err := os.Remove(f.FullPath); err != nil {
-		logger.Warnf("could not remove log file '%s': %v", f.FullPath, err)
+		logger.Warnf(stdcodes.ModuleDefaultRCReadError, "could not remove log file '%s': %v", f.FullPath, err)
 	} else {
-		logger.Debugf("log '%s' successfully transferred", f.FullPath)
+		logger.Debugf(stdcodes.ModuleDefaultRCReadError, "log '%s' successfully transferred", f.FullPath)
 	}
 }
 

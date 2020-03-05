@@ -2,8 +2,9 @@ package logging
 
 import (
 	journal "github.com/integration-system/isp-journal"
-	"github.com/integration-system/isp-lib/backend"
-	"github.com/integration-system/isp-lib/logger"
+	"github.com/integration-system/isp-lib/v2/backend"
+	log "github.com/integration-system/isp-log"
+	"github.com/integration-system/isp-log/stdcodes"
 )
 
 func WithLogging(journal journal.Journal, enable bool, includeMethods ...string) backend.PostProcessor {
@@ -21,11 +22,11 @@ func WithLogging(journal journal.Journal, enable bool, includeMethods ...string)
 			err := ctx.Error()
 			if err != nil {
 				if err := journal.Error(method, ctx.RequestBody(), ctx.ResponseBody(), err); err != nil {
-					logger.Warnf("could not write to file journal: %v", err)
+					log.Warnf(stdcodes.ModuleDefaultRCReadError, "could not write to file journal: %v", err)
 				}
 			} else {
 				if err := journal.Info(method, ctx.RequestBody(), ctx.ResponseBody()); err != nil {
-					logger.Warnf("could not write to file journal: %v", err)
+					log.Warnf(stdcodes.ModuleDefaultRCReadError, "could not write to file journal: %v", err)
 				}
 			}
 		}
