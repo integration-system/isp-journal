@@ -4,15 +4,21 @@ import (
 	"errors"
 	"github.com/integration-system/go-cmp/cmp"
 	"github.com/integration-system/isp-journal"
+	"github.com/integration-system/isp-journal/codes"
 	"github.com/integration-system/isp-journal/entry"
 	"github.com/integration-system/isp-journal/log"
 	"github.com/integration-system/isp-journal/transfer"
 	"github.com/integration-system/isp-lib/v2/backend"
+	logger "github.com/integration-system/isp-log"
 	"net"
 )
 
+const (
+	RotationSignalEvent = "CONFIG:LOG_ROTATE"
+)
+
 var (
-	ErrNotInitialize = errors.New("not initialized, call `ReceiveConfiguration` first")
+	ErrJournalClosed = errors.New("journal closed")
 )
 
 type Config struct {
@@ -87,6 +93,9 @@ func (j *RxJournal) Error(event string, req []byte, res []byte, err error) error
 }
 
 func (j *RxJournal) Rotate() error {
+	if j.journal == nil {
+		return ErrJournalClosed
+	}
 	return j.journal.Rotate()
 }
 
@@ -94,7 +103,18 @@ func (j *RxJournal) Close() error {
 	if j.journal == nil {
 		return nil
 	}
-	return j.journal.Close()
+	err := j.journal.Close()
+	j.journal = nil
+	return err
+}
+
+func (j *RxJournal) SubscribeToRotationSignal() (event string, f func(_ []byte)) {
+	return RotationSignalEvent, func(data []byte) {
+		err := j.Rotate()
+		if err != nil {
+			logger.Warnf(codes.JournalingError, "log rotate signal: %v", err)
+		}
+	}
 }
 
 type state struct {
