@@ -20,7 +20,7 @@ const (
 	createdAtField  = "createdAt"
 	hostField       = "host"
 
-	gzipContent   = "application/gzip"
+	//gzipContent   = "application/gzip"
 	binaryContent = "application/binary"
 )
 
@@ -66,15 +66,15 @@ func GetLogInfo(bf streaming.BeginFile) (*LogInfo, error) {
 		return nil, fmt.Errorf("invalid '%s' time format: %v", createdAtField, err)
 	}
 
-	compressed := false
-	if bf.ContentType == gzipContent {
-		compressed = true
-	}
+	//compressed := false
+	//if bf.ContentType == gzipContent {
+	//	compressed = true
+	//}
 
 	return &LogInfo{
 		ModuleName: moduleName,
 		Host:       host,
-		Compressed: compressed,
+		Compressed: false, //compressed,
 		CreatedAt:  createdAtTime,
 	}, nil
 }
@@ -99,14 +99,14 @@ func statToFileHeader(f log.LogFile, moduleName, host string) streaming.BeginFil
 		hostField:       host,
 		createdAtField:  entry.FormatTime(f.CreatedAt),
 	}
-	ct := binaryContent
-	if f.Compressed {
-		ct = gzipContent
-	}
+	//ct := binaryContent
+	//if f.Compressed {
+	//	ct = gzipContent
+	//}
 	return streaming.BeginFile{
 		FileName:      f.Name(),
 		FormDataName:  f.Name(),
-		ContentType:   ct,
+		ContentType:   binaryContent, //ct,
 		ContentLength: f.Size(),
 		FormData:      formData,
 	}

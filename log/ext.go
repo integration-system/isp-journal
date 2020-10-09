@@ -2,16 +2,16 @@ package log
 
 import (
 	"bufio"
-	"compress/gzip"
 	"errors"
 	"fmt"
-	io2 "github.com/integration-system/isp-io"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
+
+	io2 "github.com/integration-system/isp-io"
 )
 
 const (
@@ -40,7 +40,7 @@ func CollectExistedLogs(loggerConfig Config) ([]LogFile, error) {
 		}
 		if t, err := parseTimeFormFilename(f.Name(), prefix, ext); err == nil {
 			logFiles = append(logFiles, LogFile{
-				Compressed: path.Ext(f.Name()) == ".gz",
+				Compressed: false, //path.Ext(f.Name()) == ".gz",
 				FileInfo:   f,
 				CreatedAt:  t,
 				FullPath:   path.Join(loggerConfig.GetDirectory(), f.Name()),
@@ -65,7 +65,7 @@ func MakeLogFile(c Config, filepath string) (*LogFile, error) {
 				FullPath:   filepath,
 				CreatedAt:  t,
 				FileInfo:   info,
-				Compressed: c.IsCompress(),
+				Compressed: false, //c.IsCompress(),
 			}, nil
 		}
 	}
@@ -129,10 +129,10 @@ func makePipe(c Config, srcFile string, flag int, mode os.FileMode) (io2.WritePi
 		p.Unshift(bufWr)
 	}
 
-	if c.IsCompress() {
-		gzipWr := gzip.NewWriter(p.Last())
-		p.Unshift(gzipWr)
-	}
+	//if c.IsCompress() {
+	//	gzipWr := gzip.NewWriter(p.Last())
+	//	p.Unshift(gzipWr)
+	//}
 
 	return p, nil
 }
