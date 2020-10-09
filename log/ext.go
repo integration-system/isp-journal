@@ -40,7 +40,7 @@ func CollectExistedLogs(loggerConfig Config) ([]LogFile, error) {
 		}
 		if t, err := parseTimeFormFilename(f.Name(), prefix, ext); err == nil {
 			logFiles = append(logFiles, LogFile{
-				Compressed: false, //path.Ext(f.Name()) == ".gz",
+				Compressed: false,
 				FileInfo:   f,
 				CreatedAt:  t,
 				FullPath:   path.Join(loggerConfig.GetDirectory(), f.Name()),
@@ -65,7 +65,7 @@ func MakeLogFile(c Config, filepath string) (*LogFile, error) {
 				FullPath:   filepath,
 				CreatedAt:  t,
 				FileInfo:   info,
-				Compressed: false, //c.IsCompress(),
+				Compressed: false,
 			}, nil
 		}
 	}
@@ -128,11 +128,6 @@ func makePipe(c Config, srcFile string, flag int, mode os.FileMode) (io2.WritePi
 		bufWr := bufio.NewWriterSize(p.Last(), c.GetBufferSize())
 		p.Unshift(bufWr)
 	}
-
-	//if c.IsCompress() {
-	//	gzipWr := gzip.NewWriter(p.Last())
-	//	p.Unshift(gzipWr)
-	//}
 
 	return p, nil
 }

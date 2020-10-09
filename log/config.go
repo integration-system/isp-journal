@@ -21,9 +21,6 @@ func (c Config) GetFilename() string {
 	} else {
 		name = c.Filename
 	}
-	//if c.IsCompress() {
-	//	name += ".gz"
-	//}
 	return name
 }
 
@@ -34,10 +31,6 @@ func (c Config) GetMaxSizeInBytes() int64 {
 func (c Config) GetRotateTimeout() time.Duration {
 	return time.Duration(c.RotateTimeoutMs) * time.Millisecond
 }
-
-//func (c Config) IsCompress() bool {
-//	return c.Compress
-//}
 
 func (c Config) IsBuffered() bool {
 	return c.BufferSize > 0

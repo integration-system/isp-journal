@@ -8,12 +8,6 @@ import (
 	"github.com/mailru/easyjson"
 )
 
-//import (
-////"github.com/golang/protobuf/proto"
-//"github.com/json-iterator/go"
-//"testing"
-//)
-
 var (
 	e = &Entry{
 		ModuleName: "some module name",
