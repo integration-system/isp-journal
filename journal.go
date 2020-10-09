@@ -1,10 +1,12 @@
 package journal
 
 import (
-	"github.com/integration-system/isp-journal/entry"
-	"github.com/integration-system/isp-journal/log"
+	"encoding/json"
 	"io"
 	"time"
+
+	"github.com/integration-system/isp-journal/entry"
+	"github.com/integration-system/isp-journal/log"
 )
 
 type Journal interface {
@@ -30,7 +32,7 @@ func (j *fileJournal) Log(level entry.Level, event string, req []byte, res []byt
 		ModuleName: j.moduleName,
 		Host:       j.host,
 		Event:      event,
-		Time:       entry.FormatTime(time.Now().UTC()),
+		Time:       entry.FormatTime(time.Now().UTC()), // TODO проверить часовые пояса
 		Level:      string(level),
 		Request:    req,
 		Response:   res,
@@ -39,7 +41,7 @@ func (j *fileJournal) Log(level entry.Level, event string, req []byte, res []byt
 		e.ErrorText = err.Error()
 	}
 
-	bytes, err := entry.MarshalToBytes(e)
+	bytes, err := json.Marshal(e)
 	if err != nil {
 		return err
 	}
