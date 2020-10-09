@@ -1,5 +1,6 @@
 package entry
 
+//go:generate easyjson -all entry.go
 type Entry struct {
 	ModuleName string `json:"moduleName,omitempty"`
 	Host       string `json:"host,omitempty"`
