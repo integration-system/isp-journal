@@ -1,12 +1,12 @@
 package journal
 
 import (
-	"encoding/json"
 	"io"
 	"time"
 
 	"github.com/integration-system/isp-journal/entry"
 	"github.com/integration-system/isp-journal/log"
+	"github.com/mailru/easyjson"
 )
 
 type Journal interface {
@@ -41,7 +41,7 @@ func (j *fileJournal) Log(level entry.Level, event string, req []byte, res []byt
 		e.ErrorText = err.Error()
 	}
 
-	bytes, err := json.Marshal(e)
+	bytes, err := easyjson.Marshal(e)
 	if err != nil {
 		return err
 	}
