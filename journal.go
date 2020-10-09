@@ -32,7 +32,7 @@ func (j *fileJournal) Log(level entry.Level, event string, req []byte, res []byt
 		ModuleName: j.moduleName,
 		Host:       j.host,
 		Event:      event,
-		Time:       entry.FormatTime(time.Now().UTC()), // TODO проверить часовые пояса
+		Time:       entry.FormatTime(time.Now()),
 		Level:      string(level),
 		Request:    req,
 		Response:   res,
